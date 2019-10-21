@@ -31,7 +31,7 @@ public class HealthServicesController {
 											@RequestParam Double latitude,
 											@RequestParam Double longitude) {
 			
-		return ResponseEntity.ok(service.obterPrestadoresSaude(especialidade, latitude, longitude));
+		return ResponseEntity.ok(service.getHealthProviders(especialidade, latitude, longitude));
 	}
 
 }	

@@ -1,4 +1,4 @@
-package br.com.testebrasilprev;
+package br.com.healthservices;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
