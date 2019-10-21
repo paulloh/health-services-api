@@ -31,7 +31,7 @@ public class ProvidersLocationService {
     @Autowired
     MessageConfig messages;
     
-	public List<ProvidersDTO> obterPrestadoresSaude(String esp, Double latitude, Double longitude){
+	public List<ProvidersDTO> getHealthProviders(String esp, Double latitude, Double longitude){
 
 		List<Providers> providersEnt = repository.findByEspecialidade(esp);
 		
