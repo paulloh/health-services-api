@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -30,7 +31,10 @@ public class ProvidersLocationService {
 
     @Autowired
     MessageConfig messages;
-    
+
+    @Value("${params.mapsKey}")
+	private String keyMaps;
+
 	public List<ProvidersDTO> getHealthProviders(String esp, Double latitude, Double longitude){
 
 		List<Providers> providersEnt = repository.findByEspecialidade(esp);
@@ -40,13 +44,13 @@ public class ProvidersLocationService {
 		}
 
 		List<ProvidersDTO> provDto = providersEnt.stream().map(prov -> {
-			RouteResponseDTO reponseRoutes = routes(latitude+","+longitude, prov.getLatitude()+","+prov.getLongitude());
+			RouteResponseDTO responseDTO = routes(latitude+","+longitude, prov.getLatitude()+","+prov.getLongitude());
 			
-			if (reponseRoutes.getRows().get(0).getElements().get(0).getDistance() == null) {
+			if (responseDTO.getRows().get(0).getElements().get(0).getDistance() == null) {
 				throw new BadRequestException(messages.get(MsgsConstants.INVALID_GEOLOCATION));
 			}
 			
-			return convertToDto(prov, reponseRoutes.getRows().get(0).getElements().get(0).getDistance().getValue() / 1000);
+			return convertToDto(prov, responseDTO.getRows().get(0).getElements().get(0).getDistance().getValue() / 1000);
 		}).collect(Collectors.toList());
 		
 		Collections.sort(provDto);
@@ -56,7 +60,7 @@ public class ProvidersLocationService {
 
 	public RouteResponseDTO routes(String origins, String destinations) {
 
-		RouteResponseDTO response =  WebClient
+		return WebClient
 				.create("https://maps.googleapis.com")
 				.get()
 				.uri(uriBuilder -> uriBuilder
@@ -64,13 +68,11 @@ public class ProvidersLocationService {
 						.queryParam("units", "metrics")
 						.queryParam("origins", origins)
 						.queryParam("destinations", destinations)
-						.queryParam("key", "AIzaSyDNwb4fI9WcY2Qxou_w7GK5anlzb78Ilyo")
+						.queryParam("key", keyMaps)
 						.build())
 				.retrieve()
 				.bodyToMono(RouteResponseDTO.class)
-				.block();	
-
-		return response;
+				.block();
 	}
 
 	@Bean
